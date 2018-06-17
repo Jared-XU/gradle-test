@@ -24,6 +24,38 @@ class ProjectVersion {
 
 task printVersion {
     doLast {
-        logger.quiet "Version: $version"
+        logger.quiet "Version 1: $version"
     }
 }
+
+ext.versionFile = file('version.properties')
+
+task loadVersion {
+    project.version = readVersion()
+}
+
+ProjectVersion readVersion() {
+    logger.quiet 'Reading the version file.'
+
+    if(!versionFile.exists()) {
+        throw new GradleException("Required version file does not exist: $versionFile.canonicalPath")
+    }
+
+    Properties versionProps = new Properties()
+
+    versionFile.withInputStream { stream ->
+        versionProps.load(stream)
+    }
+
+    new ProjectVersion(versionProps.major.toInteger(), versionProps.minor.toInteger(), \
+                        versionProps.release.toBoolean())
+}
+
+task printVersion2 {
+    dependsOn printVersion
+    doLast {
+        logger.quiet "Version 2: $version"
+    }
+}
+
+
